@@ -196,8 +196,80 @@ SELECT purchase_price,count(*)
 FROM product
 GROUP BY purchase_price;
 
-SELECT purchase_price,product_type,product_name
-FROM product WHERE product_type = '衣服';
+-- FROM 》 WHERE 》 GROUP BY 》SELECT
+SELECT '衣服', purchase_price AS pt, count(*)
+FROM product
+WHERE product_type = '衣服'
+GROUP BY pt;
+
+SELECT product_type, count(*)
+FROM product
+GROUP BY product_type;
+
+-- FROM 》 WHERE 》 GROUP BY 》 HAVING 》 SELECT
+SELECT product_type, count(*)
+FROM product
+GROUP BY product_type
+HAVING count(*) = 2;
+
+SELECT product_type, avg(sale_price)
+FROM product
+WHERE 1=1
+GROUP BY product_type
+HAVING avg(sale_price) >= 0
+ORDER BY avg(sale_price);
+
+SELECT *
+FROM product
+ORDER BY sale_price ASC,product_id ASC;
+
+-- PostgreSQL会把NULL当成max来处理
+-- FROM 》 WHERE 》 GROUP BY 》 HAVING 》 SELECT 》 ORDER BY
+SELECT product_id AS id, product_name AS name, sale_price AS sp, purchase_price
+FROM product
+ORDER BY sp, id;
+
+-- 不推荐使用
+-- 2代指name,1代指id。标号是select中列出来的列的顺序。淦！还能这样
+SELECT product_id AS id, product_name AS name, sale_price AS sp, purchase_price
+FROM product
+ORDER BY 2,1 ;
+
+SELECT product_type, SUM(sale_price)
+FROM Product
+WHERE regist_date > '2009-09-01'
+GROUP BY product_type;
+
+SELECT product_type,sum(sale_price) AS sumSP,sum(purchase_price) AS sumPP
+FROM product
+--WHERE purchase_price * 1.5 > sale_price
+GROUP BY product_type
+HAVING sum(purchase_price) * 1.5 = sum(sale_price);
+
+SELECT product_id,product_name,product_type,sale_price,purchase_price,regist_date
+FROM product
+ORDER BY regist_date DESC ,sale_price;
+
+-- page 116
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
