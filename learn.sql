@@ -334,7 +334,7 @@ CREATE TABLE producttype
     product_type VARCHAR(32) NOT NULL primary key ,
     sum_sale_price INTEGER ,
     sum_purchase_price INTEGER
-)
+);
 
 INSERT INTO producttype (product_type, sum_sale_price, sum_purchase_price)
 SELECT product_type,SUM(sale_price),SUM(purchase_price)
@@ -347,6 +347,181 @@ WHERE sale_price >= 4000;
 SELECT * FROM product;
 
 -- page 133
+
+UPDATE product
+SET regist_date = '2009-10-10';
+
+SELECT * FROM product ORDER BY product_id;
+
+UPDATE product
+SET sale_price = sale_price * 10
+WHERE product_type = '厨房用具';
+
+SELECT * from  product;
+
+UPDATE product
+SET regist_date = NULL
+WHERE product_id = '0008';
+
+SELECT *
+FROM product
+ORDER BY product_id DESC ;
+
+UPDATE product
+SET sale_price = sale_price * 10,
+    purchase_price = purchase_price / 2
+WHERE product_type = '厨房用具';
+
+UPDATE product
+SET (sale_price, purchase_price) = (sale_price * 10, purchase_price / 2)
+WHERE product_type = '厨房用具';
+
+BEGIN TRANSACTION ;
+
+UPDATE product
+SET sale_price = sale_price - 1000
+WHERE product_name = '运动T恤';
+
+UPDATE product
+SET sale_price = sale_price + 1000
+WHERE product_name = 'T恤衫';
+
+COMMIT ;
+
+BEGIN TRANSACTION ;
+
+UPDATE product
+SET sale_price = sale_price - 1000
+WHERE product_name = '运动T恤';
+
+UPDATE product
+SET sale_price = sale_price + 1000
+WHERE product_name = 'T恤衫';
+
+ROLLBACK ;
+
+BEGIN TRANSACTION ;
+DELETE  FROM producttype WHERE product_type = '衣服';
+DELETE  FROM producttype WHERE product_type = '厨房用具';
+DELETE  FROM producttype WHERE product_type = '办公⽤品';
+
+SELECT * FROM producttype;
+
+ROLLBACK ;
+
+SELECT * FROM producttype ;
+
+CREATE TABLE aa(
+    aa INTEGER primary key
+);
+
+BEGIN TRANSACTION ;
+
+INSERT INTO aa VALUES (1);
+INSERT INTO aa VALUES (2);
+INSERT INTO aa VALUES (3);
+INSERT INTO aa VALUES (4);
+
+COMMIT ;
+
+CREATE TABLE productmargin
+(
+    product_id CHAR(4) NOT NULL primary key ,
+    product_name VARCHAR(100) NOT NULL ,
+    sale_price INTEGER ,
+    purchase_price INTEGER ,
+    margin INTEGER
+);
+
+CREATE TABLE productTemp
+(
+    product_id CHAR(4) primary key ,
+    product_name VARCHAR(100) NOT NULL ,
+    product_type VARCHAR(50) NOT NULL ,
+    sale_price INTEGER ,
+    purchase_price INTEGER ,
+    register_date DATE
+);
+
+INSERT INTO productTemp (product_id, product_name, product_type, sale_price, purchase_price, register_date)
+VALUES ('0001','T恤衫','衣服',1000,500,'2009-09-20'),('0002','打孔器','办公用品',500,320,'2009-09-11'),('0003','运动T恤','衣服',4000,2800,NULL);
+
+INSERT INTO productmargin
+SELECT product_id,product_name,sale_price,purchase_price,(sale_price - purchase_price) AS margin
+FROM productTemp;
+
+UPDATE productmargin SET sale_price = (sale_price - 1000) WHERE product_name = '运动T恤';
+
+UPDATE productmargin SET margin = (sale_price - purchase_price);
+
+DELETE FROM product;
+
+INSERT INTO Product VALUES ('0001', 'T恤' ,'衣服', 1000, 500, '2009-09-20');
+INSERT INTO Product VALUES ('0002', '打孔器', '办公用品', 500, 320, '2009-09-11');
+INSERT INTO Product VALUES ('0003', '运动T恤', '衣服', 4000, 2800, NULL);
+INSERT INTO Product VALUES ('0004', '菜刀', '厨房用具', 3000, 2800, '2009-09-20');
+INSERT INTO Product VALUES ('0005', '高压锅', '厨房用具', 6800, 5000, '2009-01-15');
+INSERT INTO Product VALUES ('0006', '叉子', '厨房用具', 500, NULL, '2009-09-20');
+INSERT INTO Product VALUES ('0007', '擦菜板', '厨房用具', 880, 790, '2008-04-28');
+INSERT INTO Product VALUES ('0008', '圆珠笔', '办公用品', 100, NULL, '2009-11-11');
+
+CREATE VIEW productsum (product_type,cnt_product)
+AS
+    SELECT product_type,count(*)
+FROM product
+GROUP BY product_type;
+
+SELECT product_type,cnt_product
+FROM productsum;
+
+CREATE VIEW productsumjim (product_type,cnt_product)
+AS
+    SELECT product_type,cnt_product
+FROM productsum
+WHERE product_type = '办公用品';
+
+SELECT product_type,cnt_product
+FROM productsumjim;
+
+CREATE VIEW productjim (product_id,product_name,product_type,sale_price,purchase_price,regist_date)
+AS
+    SELECT *
+FROM product
+WHERE product_type = '办公用品';
+
+INSERT INTO productjim VALUES ('0009','印章','办公用品',95,10,'2009-11-30');
+
+SELECT * FROM productjim;
+
+DROP VIEW productsum CASCADE ;
+
+DELETE FROM product WHERE product_id = '0009';
+
+CREATE VIEW productsum (product_type,cnt_product)
+AS
+    SELECT product_type,count(*)
+FROM product
+GROUP BY product_type;
+
+SELECT product_type,cnt_product
+FROM productsum;
+
+SELECT product_type,count(*) AS cnt_product
+FROM product
+GROUP BY product_type;
+
+SELECT product_type,count(*) AS cnt_product
+FROM product
+GROUP BY product_type;
+
+SELECT product_type,cnt_product
+FROM (SELECT product_type,count(*) AS cnt_product
+FROM product
+GROUP BY product_type) AS productsum;
+
+-- page161
+
+
 
 
 
