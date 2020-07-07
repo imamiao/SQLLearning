@@ -521,18 +521,298 @@ GROUP BY product_type) AS productsum;
 
 -- page161
 
+SELECT product_id,product_name,sale_price
+FROM product
+WHERE sale_price > (SELECT avg(sale_price) FROM product);
 
+SELECT product_id,
+       product_name,
+       sale_price,
+       (SELECT avg(sale_price)
+           FROM product) AS avg_price
+FROM product;
 
+SELECT product_type,avg(sale_price),(SELECT avg(sale_price) FROM product) AS all_avg
+FROM product
+GROUP BY product_type
+HAVING avg(sale_price) > (SELECT avg(sale_price) FROM product);
 
+/*SELECT product_id,
+       product_name,
+       sale_price,
+       (SELECT avg(sale_price)
+           FROM product
+           GROUP BY product_type) AS avg_price
+FROM product;*/
 
+SELECT product_name,product.product_type,sale_price,avgt
+FROM product,(SELECT product_type, avg(sale_price) AS avgt FROM product GROUP BY product_type) AS type_avg
+WHERE product.product_type = type_avg.product_type AND sale_price > avgt;
 
+SELECT product_type, product_name, sale_price
+FROM product AS p1
+WHERE sale_price >
+      (SELECT avg(sale_price)
+      FROM product AS p2
+      WHERE p1.product_type = p2 .product_type);
 
+DROP VIEW viewpractice5_1;
 
+CREATE VIEW viewpractice5_1 (product_name,sale_price,regist_date)
+AS
+    SELECT product_name,sale_price,regist_date
+FROM product
+WHERE sale_price >= 1000 AND regist_date = '2009-09-20';
 
+SELECT * FROM viewpractice5_1;
 
+--INSERT INTO viewpractice5_1 VALUES ('0010','刀子',1000,300,NULL,'2009-11-02');
 
+SELECT product_id,product_name,product_type,sale_price,(SELECT avg(sale_price) FROM product) AS sale_price_all
+FROM product
+ORDER BY sale_price;
 
+CREATE VIEW avgpricebytype (product_id,product_name_product_type,sale_price,avg_sale_price)
+AS
+    SELECT product_id,product_name,product.product_type,sale_price,aspTable.asp AS sale_price_all
+FROM product,
+     (SELECT product_type,avg(sale_price)
+    AS asp
+FROM product
+GROUP BY product_type) AS aspTable
+WHERE product.product_type = aspTable.product_type;
 
+SELECT * FROM avgpricebytype;
 
+SELECT product_id,product_name,product_type,sale_price,
+       (SELECT avg(sale_price) FROM product p2 GROUP BY p1.sale_price)
+FROM product p1;
 
+CREATE TABLE samplemath
+(
+    m NUMERIC (10,3),
+    n INTEGER,
+    p INTEGER
+);
 
+BEGIN TRANSACTION ;
+
+INSERT INTO samplemath(m, n, p) VALUES (500,0,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (-180,0,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (NULL,NULL,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (NULL,7,3);
+INSERT INTO samplemath(m, n, p) VALUES (NULL,5,2);
+INSERT INTO samplemath(m, n, p) VALUES (NULL,4,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (8,NULL,3);
+INSERT INTO samplemath(m, n, p) VALUES (2.27,1,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (5.555,2,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (NULL,1,NULL);
+INSERT INTO samplemath(m, n, p) VALUES (8.76,NULL,NULL);
+
+COMMIT ;
+
+SELECT * FROM samplemath;
+
+SELECT m,abs(m) AS abs_col
+FROM samplemath;
+
+SELECT n, p, mod(n,p) AS mod_col
+FROM samplemath;
+
+SELECT m,n,round(m,n) AS round_col
+FROM samplemath;
+
+CREATE TABLE samplestr
+(
+    str1 VARCHAR(40),
+    str2 VARCHAR(40),
+    str3 VARCHAR(40)
+);
+
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('opx',	        'rt'	,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('abc'	,	'def'	,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('山田'	,	'太郎'  ,	'是我');
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('aaa'	,	NULL    ,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES (NULL	,	'xyz',	        NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('@!#$%',	NULL	,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('ABC'	,	NULL	,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('aBC'	,	NULL	,	NULL);
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('abc太郎',	'abc'	,	'ABC');
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('abcdefabc',   'abc'	,	'ABC');
+INSERT INTO SampleStr (str1, str2, str3) VALUES ('micmic',	      'i',        'I');
+
+COMMIT ;
+
+SELECT * FROM samplestr;
+
+SELECT str1,str2,str3,str1||str2||str3 AS str_concat
+FROM samplestr;
+
+SELECT str1,length(str1) AS len_str
+FROM samplestr;
+
+SELECT str1,lower(str1) AS low_str
+FROM samplestr
+WHERE str1 IN ('ABC','aBC','abc','山田');
+
+SELECT str1,str2,str3,replace(str1,str2,str3) AS rep_str
+FROM samplestr;
+
+SELECT str1,substring(str1 FROM 3 FOR 2) AS sub_str
+FROM samplestr;
+
+SELECT str1,upper(str1) AS up_str
+FROM samplestr
+WHERE str1 IN ('ABC','aBC','abc','山田');
+
+SELECT CURRENT_DATE;
+
+SELECT CURRENT_TIME;
+
+SELECT CURRENT_TIMESTAMP;
+
+SELECT CURRENT_TIMESTAMP,
+       EXTRACT(YEAR FROM CURRENT_TIMESTAMP) AS year,
+       EXTRACT(MONTH FROM CURRENT_TIMESTAMP) AS month,
+       EXTRACT(DAY FROM CURRENT_TIMESTAMP) AS day,
+       EXTRACT(HOUR FROM CURRENT_TIMESTAMP) AS hour;
+
+SELECT CAST('0001' AS INTEGER) AS int_col;
+
+SELECT CAST('2009-12-14' AS DATE) AS date_col;
+
+SELECT COALESCE(NULL,1) AS col_1,
+       COALESCE(NULL,'test',NULL) AS col_2,
+       COALESCE(NULL,NULL,'2009-11-11') AS col_3;
+
+SELECT COALESCE(str2,'NULL') FROM samplestr;
+
+-- DDL：创建表
+CREATE TABLE SampleLike
+( strcol VARCHAR(6) NOT NULL,
+  PRIMARY KEY (strcol));
+
+-- DML：插入数据
+
+INSERT INTO SampleLike (strcol) VALUES ('abcddd');
+INSERT INTO SampleLike (strcol) VALUES ('dddabc');
+INSERT INTO SampleLike (strcol) VALUES ('abdddc');
+INSERT INTO SampleLike (strcol) VALUES ('abcdd');
+INSERT INTO SampleLike (strcol) VALUES ('ddabc');
+INSERT INTO SampleLike (strcol) VALUES ('abddc');
+
+COMMIT;
+
+SELECT *
+FROM samplelike
+WHERE strcol LIKE 'ddd%';
+
+SELECT *
+FROM samplelike
+WHERE strcol LIKE '%ddd%';
+
+SELECT *
+FROM samplelike
+WHERE strcol LIKE '%ddd';
+
+SELECT *
+FROM samplelike
+WHERE strcol LIKE 'abc__%';
+
+SELECT product_name,sale_price
+FROM product
+WHERE sale_price BETWEEN 100 AND 1000;
+
+SELECT product_name,sale_price
+FROM product
+WHERE sale_price > 100 AND sale_price < 1000;
+
+SELECT product_name,purchase_price
+FROM product
+WHERE purchase_price IS NULL;
+
+SELECT product_name,purchase_price
+FROM product
+WHERE purchase_price IS NOT NULL;
+
+SELECT product_name,purchase_price
+FROM product
+WHERE purchase_price = 320 OR purchase_price = 500 OR purchase_price = 5000;
+
+SELECT product_name,purchase_price
+FROM product
+WHERE purchase_price IN (320,500,5000,NULL);
+
+-- DDL：创建表
+CREATE TABLE ShopProduct
+(shop_id    CHAR(4)       NOT NULL,
+ shop_name  VARCHAR(200)  NOT NULL,
+ product_id CHAR(4)       NOT NULL,
+ quantity   INTEGER       NOT NULL,
+ PRIMARY KEY (shop_id, product_id));
+
+-- DML：插入数据
+
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000A',	'东京',		'0001',	30);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000A',	'东京',		'0002',	50);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000A',	'东京',		'0003',	15);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000B',	'名古屋',	'0002',	30);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000B',	'名古屋',	'0003',	120);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000B',	'名古屋',	'0004',	20);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000B',	'名古屋',	'0006',	10);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000B',	'名古屋',	'0007',	40);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000C',	'大阪',		'0003',	20);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000C',	'大阪',		'0004',	50);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000C',	'大阪',		'0006',	90);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000C',	'大阪',		'0007',	70);
+INSERT INTO ShopProduct (shop_id, shop_name, product_id, quantity) VALUES ('000D',	'福冈',		'0001',	100);
+
+COMMIT;
+
+SELECT product.product_id,product_name,sale_price
+FROM product,shopproduct
+WHERE product.product_id = ShopProduct.product_id AND ShopProduct.shop_id = '000C';
+
+SELECT * FROM ShopProduct WHERE shop_id = '000C';
+
+SELECT product_id,product_name,sale_price
+FROM product
+WHERE product_id NOT IN
+      (SELECT ShopProduct.product_id
+        FROM ShopProduct
+        WHERE shop_id = '000A');
+
+SELECT product_name,sale_price
+FROM product AS p
+WHERE EXISTS(SELECT *
+    FROM ShopProduct AS sp
+    WHERE sp.shop_id = '000C'
+    AND sp.product_id = p.product_id
+    AND sp.product_id = '0003');
+
+SELECT product_name,sale_price
+FROM product AS p
+WHERE NOT EXISTS(SELECT *
+    FROM ShopProduct AS sp
+    WHERE sp.shop_id = '000A'
+    AND sp.product_id = p.product_id
+    AND sp.product_id = '0003');
+
+SELECT product_name,
+       CASE WHEN product_type = '衣服' THEN 'A:' || product_type
+            WHEN product_type = '办公用品' THEN 'B:' || product_type
+            WHEN product_type = '厨房用具' THEN 'C:' || product_type
+            ELSE NULL
+       END AS abs_product_type
+FROM product;
+
+SELECT product_type,sum(sale_price) AS sum_price
+FROM product
+GROUP BY product_type;
+
+SELECT sum(CASE WHEN product_type = '衣服' THEN sale_price ELSE 0 END) AS sum_price_clothes,
+       sum(CASE WHEN product_type = '厨房用具' THEN sale_price ELSE 0 END) AS sum_price_kitchen,
+       sum(CASE WHEN product_type = '办公用品' THEN sale_price ELSE 0 END) AS sum_price_office
+FROM product
+
+-- page221
