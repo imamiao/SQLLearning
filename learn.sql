@@ -1080,7 +1080,7 @@ FROM shopproduct AS sp
 
 SELECT *
 FROM product
-EXCEPT
+    EXCEPT
 SELECT *
 FROM product
 UNION
@@ -1088,7 +1088,126 @@ SELECT *
 FROM product
 ORDER BY product_id;
 
-SELECT COALESCE(sp.shop_id,'不确定'),COALESCE(sp.shop_name,'不确定'),COALESCE(sp.product_id,'不确定'),p.product_name,p.sale_price
-FROM shopproduct AS sp RIGHT OUTER JOIN product p on sp.product_id = p.product_id;
+SELECT COALESCE(sp.shop_id, '不确定'),
+       COALESCE(sp.shop_name, '不确定'),
+       COALESCE(sp.product_id, '不确定'),
+       p.product_name,
+       p.sale_price
+FROM shopproduct AS sp
+         RIGHT OUTER JOIN product p on sp.product_id = p.product_id;
 
 -- page 197
+SELECT shop_id, count(*)
+FROM ShopProduct
+GROUP BY shop_id;
+
+SELECT product_name,
+       product_type,
+       sale_price,
+       rank() OVER (PARTITION BY product_type ORDER BY sale_price) AS ranking,
+       dense_rank() OVER ( ORDER BY sale_price)                    AS dense_ranking,
+       row_number() OVER ( ORDER BY sale_price)                    AS row_number
+FROM product;
+
+SELECT *
+FROM (SELECT product_name,
+             product_type,
+             sale_price,
+             rank() OVER (PARTITION BY product_type ORDER BY sale_price) AS ranking,
+             dense_rank() OVER ( ORDER BY sale_price)                    AS dense_ranking,
+             row_number() OVER ( ORDER BY sale_price)                    AS row_number
+      FROM product) AS p1
+WHERE p1.ranking <= 2;
+
+SELECT product_id,
+       product_name,
+       sale_price,
+       avg(sale_price) OVER (ORDER BY product_id) AS current_sum
+FROM product;
+
+SELECT product_id,
+       product_name,
+       sale_price,
+       avg(sale_price) OVER (ORDER BY product_id ROWs BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS current_sum
+FROM product;
+
+SELECT product_id,
+       product_name,
+       product_type,
+       sale_price,
+       rank() OVER (ORDER BY sale_price) AS ranking
+FROM product
+ORDER BY product_id;
+
+SELECT product_type, count(*)
+FROM product
+GROUP BY product_type
+HAVING count(*) >= 2;
+
+SELECT product_type, sum(sale_price)
+FROM product
+GROUP BY product_type;
+
+SELECT '合计' AS product_type, sum(sale_price)
+FROM product
+UNION ALL
+SELECT product_type, sum(sale_price)
+FROM product
+GROUP BY product_type;
+
+SELECT COALESCE(product_type, '合计'), sum(sale_price) AS sum_price
+FROM product
+GROUP BY rollup (product_type);
+
+SELECT product_type, regist_date, sum(sale_price) AS sum_price, count(*)
+FROM product
+GROUP BY product_type, regist_date;
+
+SELECT CASE
+           WHEN GROUPING(product_type) = 1
+               THEN '商品种类 合计'
+           ELSE product_type END
+                       AS product_type,
+       CASE
+           WHEN GROUPING(regist_date) = 1
+               THEN '登记日期 合计'
+           ELSE CAST(regist_date AS VARCHAR(16)) END
+                       AS regist_date,
+       sum(sale_price) AS sum_price,
+       count(*)
+FROM product
+GROUP BY cube (product_type, regist_date)
+ORDER BY sum_price DESC, product_type;
+
+SELECT GROUPING(product_type) AS product_type, grouping(regist_date) AS regist_date, sum(sale_price) AS sum_price
+FROM product
+GROUP BY rollup (product.product_type, product.regist_date);
+
+SELECT CASE
+           WHEN GROUPING(product_type) = 1
+               THEN '商品种类 合计'
+           ELSE product_type END                     AS product_type,
+       CASE
+           WHEN GROUPING(regist_date) = 1
+               THEN '登记日期 合计'
+           ELSE CAST(regist_date AS VARCHAR(16)) END AS regist_date,
+       sum(sale_price)                               AS sum_price
+FROM product
+GROUP BY CUBE (product_type, regist_date);
+
+SELECT CASE
+           WHEN GROUPING(product_type) = 1
+               THEN '商品种类 合计'
+           ELSE product_type END                     AS product_type,
+       CASE
+           WHEN GROUPING(regist_date) = 1
+               THEN '登记日期 合计'
+           ELSE CAST(regist_date AS VARCHAR(16)) END AS regist_date,
+       sum(sale_price)                               AS sum_price
+FROM product
+GROUP BY GROUPING SETS (product_type, regist_date);
+
+SELECT product_id, product_name, sale_price, MAX(sale_price) OVER ( ORDER BY product_id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS current_max_price
+FROM product;
+
+
